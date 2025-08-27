@@ -35,9 +35,11 @@ fn main() -> Result<()> {
 		sdl3::sys::render::SDL_SetRenderVSync(canvas.raw(), 1);
 	}
 	
+	// 
 	canvas.present();
 	canvas.window_mut().show();
 	
+	// Note: it is strongly suggested that the canvas, texture creator, and text cache are not lumped in with the rest of the program data because of lifetime issues
 	let texture_creator = canvas.texture_creator();
 	let mut text_cache = sdl3_text::TextCache::new();
 	let font = FontRef::try_from_slice(include_bytes!("resources/Inter_24pt-Regular.ttf"))?;
@@ -46,10 +48,15 @@ fn main() -> Result<()> {
 		should_close: false,
 	};
 	
+	// main loop
 	while !app_data.should_close {
 		
+		// handle events
 		for event in event_pump.poll_iter() { handle_event(&mut app_data, event)?; }
 		
+		// other program logic can go here
+		
+		// render
 		draw(&mut canvas, &texture_creator, &mut text_cache, &font)?;
 		
 	}
@@ -64,6 +71,7 @@ fn handle_event(app_data: &mut AppData, event: Event) -> Result<()> {
 		
 		Event::Quit { timestamp: _ } => app_data.should_close = true,
 		
+		// close the example if ctrl+w or ctrl+q is pressed
 		Event::KeyDown { timestamp: _, window_id: _, keycode, scancode: _, keymod, repeat: _, which: _, raw: _ } => {
 			if (keycode == Some(sdl3::keyboard::Keycode::W) || keycode == Some(sdl3::keyboard::Keycode::Q)) && (keymod.contains(Mod::RCTRLMOD) || keymod.contains(Mod::LCTRLMOD)) {
 				app_data.should_close = true;
@@ -81,13 +89,12 @@ pub fn draw<'a>(canvas: &mut Canvas<Window>, texture_creator: &'a TextureCreator
 	let start = Instant::now();
 	canvas.set_draw_color(Color::RGB(255, 255, 255));
 	canvas.clear();
-	let (width, height) = canvas.output_size()?;
-	let (_width, height) = (width as f32, height as f32);
+	let scale = canvas.output_size()?.1 as f32;
 	
-	let mut size = height * 0.1;
+	let mut size = scale * 0.1;
 	let mut y = size;
 	while size > 10.0 {
-		sdl3_text::render_text_subpixel("Example text 1234567890 !@#$%^&*()_+-=[]{}|;:',.<>/?~", size as u32, (height * 0.1) as i32, y as i32, Color::RGB(30, 30, 30), Color::RGB(255, 255, 255), canvas, texture_creator, text_cache, font)?;
+		sdl3_text::render_text_subpixel("Example text 1234567890 !@#$%^&*()_+-=[]{}|;:',.<>/?~", size as u32, (scale * 0.1) as i32, y as i32, Color::RGB(30, 30, 30), Color::RGB(255, 255, 255), canvas, texture_creator, text_cache, font)?;
 		size *= 0.8;
 		y += size * 1.3;
 	}

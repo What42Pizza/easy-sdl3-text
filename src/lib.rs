@@ -9,12 +9,14 @@
 //! ### Example Code:
 //! 
 //! ```
+//! use easy_sdl3_text as sdl3_text;
+//! 
 //! pub fn draw<'a>(
 //! 	app_data: &AppData,
 //! 	canvas: &mut Canvas<Window>,
 //! 	texture_creator: &'a TextureCreator<WindowContext>,
 //! 	text_cache: &mut sdl3_text::TextCache<'a>,
-//! 	font: &impl Font
+//! 	font: &impl sdl3_text::ThreadSafeFont
 //! ) -> anyhow::Result<()> {
 //! 	canvas.set_draw_color(Color::RGB(255, 255, 255));
 //! 	canvas.clear();
@@ -41,11 +43,18 @@
 
 
 
+#![warn(missing_docs)]
+
 #![feature(array_windows)]
 
 
 
-pub mod data;
-pub use data::*;
+/// Code for non-sub-pixel rendering (faster and easier to use, but looks slightly worse)
+pub mod regular;
+pub use regular::*;
+/// Code for sub-pixel rendering (limited and slower but looks nicer)
 pub mod subpixel;
 pub use subpixel::*;
+/// All data types for this crate
+pub mod data;
+pub use data::*;

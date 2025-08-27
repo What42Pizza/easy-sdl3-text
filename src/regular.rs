@@ -5,8 +5,8 @@ use sdl3::{pixels::{Color, PixelFormat}, rect::Rect, render::{Canvas, TextureCre
 
 
 
-/// Renders text with sub-pixel rendering (limited and slow but looks nice)
-pub fn render_text_subpixel<'a>(text: impl AsRef<str>, size: u32, x: i32, mut y: i32, foreground: Color, background: Color, canvas: &mut Canvas<Window>, texture_creator: &'a TextureCreator<WindowContext>, text_cache: &mut TextCache<'a>, font: &impl ThreadSafeFont) -> Result<(), RenderTextError> {
+/// Renders text without sub-pixel rendering (fast and easy to use, but looks a bit pixelated)
+pub fn render_text_regular<'a>(text: impl AsRef<str>, size: u32, x: i32, mut y: i32, foreground: Color, background: Color, canvas: &mut Canvas<Window>, texture_creator: &'a TextureCreator<WindowContext>, text_cache: &mut TextCache<'a>, font: &impl ThreadSafeFont) -> Result<(), RenderTextError> {
 	let text = text.as_ref();
 	if text.is_empty() {return Ok(());}
 	let mut font = font.as_scaled(PxScale::from(size as f32));
@@ -22,7 +22,7 @@ pub fn render_text_subpixel<'a>(text: impl AsRef<str>, size: u32, x: i32, mut y:
 				let new_textures = &new_textures;
 				let glyph = glyph.clone();
 				s.spawn(move |_s| {
-					let result = rasterize_glyph_subpixel(glyph.clone(), c, foreground, background, &font);
+					let result = rasterize_glyph_regular(glyph.clone(), c, foreground, background, &font);
 					new_textures.lock().unwrap().push(result);
 				});
 			}
@@ -70,7 +70,7 @@ pub fn render_text_subpixel<'a>(text: impl AsRef<str>, size: u32, x: i32, mut y:
 
 
 
-fn rasterize_glyph_subpixel(glyph: Glyph, c: char, foreground: Color, background: Color, font: &PxScaleFont<&impl ThreadSafeFont>) -> Option<(char, Vec<u8>, u32, u32, f32, f32)> {
+fn rasterize_glyph_regular(glyph: Glyph, c: char, foreground: Color, background: Color, font: &PxScaleFont<&impl ThreadSafeFont>) -> Option<(char, Vec<u8>, u32, u32, f32, f32)> {
 	
 	let Some(glyph) = font.outline_glyph(glyph) else {return None;};
 	let bounds = glyph.px_bounds();

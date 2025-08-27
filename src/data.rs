@@ -4,34 +4,49 @@ use ab_glyph::Font;
 
 
 
+/// Basically a wrapper for `ab_glyph::Font` that also implements `Send` and `Sync`
 pub trait ThreadSafeFont: Font + Send + Sync {}
 
 impl<T: Font + Send + Sync> ThreadSafeFont for T {}
 
-// (char, size, foreground, background) -> (texture, width, height, x_offset, y_offset)
+
+
+/// A cache for character textures, this must be passed to `render_text_regular()` and `render_text_subpixel()`
 #[derive(Default)]
 pub struct TextCache<'a> {
-	pub(crate) map: HashMap<(char, u32, Color, Color), (Texture<'a>, u32, u32, f32, f32)>,
-	pub(crate) set: HashSet<(char, u32, Color, Color)>,
+	// (char, foreground) -> (texture, x_offset, y_offset)
+	pub(crate) map_regular: HashMap<(char, Color), (Texture<'a>, f32, f32)>,
+	pub(crate) set_regular: HashSet<(char, Color)>,
+	// (char, size, foreground, background) -> (texture, width, height, x_offset, y_offset)
+	pub(crate) map_subpixel: HashMap<(char, u32, Color, Color), (Texture<'a>, u32, u32, f32, f32)>,
+	pub(crate) set_subpixel: HashSet<(char, u32, Color, Color)>,
 }
 
 impl<'a> TextCache<'a> {
+	/// Creates a new TextCache
 	#[inline]
 	pub fn new() -> Self {
 		Self::default()
 	}
+	/// Clears the cache, probably should only be done if the program is actually low on ram or vram
 	pub fn clear(&mut self) {
-		self.map.clear();
-		self.set.clear();
+		self.map_regular.clear();
+		self.set_regular.clear();
+		self.map_subpixel.clear();
+		self.set_subpixel.clear();
 	}
 }
 
 
 
+/// A wrapper for all errors that can occur while rendering text
 #[derive(Debug)]
 pub enum RenderTextError {
+	/// Wrapper for sdl3::Error
 	SdlError (Error),
+	/// Wrapper for sdl3::texture::TextureValueError
 	SdlTextureValueError (TextureValueError),
+	/// Wrapper for sdl3::texture::UpdateTextureError
 	SdlUpdateTextureError (UpdateTextureError),
 }
 
