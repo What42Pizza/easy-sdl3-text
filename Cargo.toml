@@ -1,0 +1,13 @@
+[package]
+name = "easy-sdl3-text"
+version = "0.1.0"
+edition = "2024"
+license = "MIT"
+
+[dependencies]
+ab_glyph = "0.2.31"
+sdl3 = "0.14"
+rayon = "1"
+
+[dev-dependencies]
+anyhow = "1.0.99"
