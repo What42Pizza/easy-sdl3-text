@@ -12,21 +12,28 @@ impl<T: Font + Send + Sync> ThreadSafeFont for T {}
 
 
 /// A cache for character textures, this must be passed to `render_text_regular()` and `render_text_subpixel()`
-#[derive(Default)]
-pub struct TextCache<'a> {
-	// (char, foreground) -> (texture, x_offset, y_offset)
-	pub(crate) map_regular: HashMap<(char, Color), (Texture<'a>, f32, f32)>,
+pub struct TextCache<'a, Font: ThreadSafeFont> {
+	// (char, foreground) -> (texture, width, height, x_offset, y_offset)
+	pub(crate) map_regular: HashMap<(char, Color), (Texture<'a>, u32, u32, f32, f32)>,
 	pub(crate) set_regular: HashSet<(char, Color)>,
+	// NOTE: this can kinda look a bit nicer if `size` here is replaced with usize and `size` as input for `render_text_*()` is replaced with f32 (which allows for better text scaling), but that significantly increases the number of textures to rasterize and store
 	// (char, size, foreground, background) -> (texture, width, height, x_offset, y_offset)
 	pub(crate) map_subpixel: HashMap<(char, u32, Color, Color), (Texture<'a>, u32, u32, f32, f32)>,
 	pub(crate) set_subpixel: HashSet<(char, u32, Color, Color)>,
+	pub(crate) font: &'a Font,
 }
 
-impl<'a> TextCache<'a> {
+impl<'a, Font: ThreadSafeFont> TextCache<'a, Font> {
 	/// Creates a new TextCache
 	#[inline]
-	pub fn new() -> Self {
-		Self::default()
+	pub fn new(font: &'a Font) -> Self {
+		Self {
+			map_regular: HashMap::new(),
+			set_regular: HashSet::new(),
+			map_subpixel: HashMap::new(),
+			set_subpixel: HashSet::new(),
+			font,
+		}
 	}
 	/// Clears the cache, probably should only be done if the program is actually low on ram or vram
 	pub fn clear(&mut self) {
