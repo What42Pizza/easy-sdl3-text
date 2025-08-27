@@ -20,13 +20,13 @@ pub struct TextCache<'a, Font: ThreadSafeFont> {
 	// (char, size, foreground, background) -> (texture, width, height, x_offset, y_offset)
 	pub(crate) map_subpixel: HashMap<(char, u32, Color, Color), (Texture<'a>, u32, u32, f32, f32)>,
 	pub(crate) set_subpixel: HashSet<(char, u32, Color, Color)>,
-	pub(crate) font: &'a Font,
+	pub(crate) font: Font,
 }
 
 impl<'a, Font: ThreadSafeFont> TextCache<'a, Font> {
 	/// Creates a new TextCache
 	#[inline]
-	pub fn new(font: &'a Font) -> Self {
+	pub fn new(font: Font) -> Self {
 		Self {
 			map_regular: HashMap::new(),
 			set_regular: HashSet::new(),
@@ -34,6 +34,11 @@ impl<'a, Font: ThreadSafeFont> TextCache<'a, Font> {
 			set_subpixel: HashSet::new(),
 			font,
 		}
+	}
+	/// Switches this cache to a different font (and clears the cache so the characters can be re-rendered)
+	pub fn switch_font(&mut self, new_font: Font) {
+		self.font = new_font;
+		self.clear();
 	}
 	/// Clears the cache, probably should only be done if the program is actually low on ram or vram
 	pub fn clear(&mut self) {

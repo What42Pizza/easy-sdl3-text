@@ -17,7 +17,7 @@
 //! 
 //! ### Example Code:
 //! 
-//! ```
+//! ```rust
 //! use easy_sdl3_text as sdl3_text;
 //! 
 //! pub fn example_draw_function<'a, Font: ThreadSafeFont>(
