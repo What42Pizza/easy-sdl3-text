@@ -1,0 +1,4 @@
+- **v0.1.0:** (25/08/27)
+  - Initial release
+  - Includes regular and sub-pixel rendering
+  - Depends on sdl3 version "0.14", ab_glyph version "0.2", and rayon version "1"

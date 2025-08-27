@@ -8,11 +8,13 @@ This crate adds easy text rendering function for sdl3 using [ab_glyph](https://c
 
 <br>
 
-This might work best as a starting point for you to make your own text rendering library, but it is already very usable on its own. Also, render uncached text can often take over a millisecond (sometimes taking over 5 ms in the examples), but it's mostly a one-time cost, and frame-time spikes from text rasterizing should very quickly disappear as the program continues running.
+This might work best as a starting point for you to make your own text rendering library, but it is already very usable on its own. Also, rendering uncached text usually takes over a millisecond (sometimes over 5 ms in the examples), but it's mostly a one-time cost, and frame-time spikes from text rasterizing should very quickly disappear as the program continues running.
+
+**NOTE:** This currently depends on sdl3 version "0.14", ab_glyph version "0.2", and rayon version "1", if any of these crates update and you need this crate to update too, please let me know!
 
 <br>
 
-**Example Output:** (looks better in the demo, run `cargo run --example subpixel --release` to see the true sub-pixel rendering)
+**Example Output:** (looks better in the demo, run `cargo run --example subpixel --release` with the downloaded crate to see the true sub-pixel rendering)
 
 ![Example Image](https://github.com/What42Pizza/easy-sdl3-text/blob/main/images/example.png?raw=true)
 
