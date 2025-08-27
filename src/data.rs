@@ -12,7 +12,7 @@ impl<T: Font + Send + Sync> ThreadSafeFont for T {}
 
 
 /// A cache for character textures, this must be passed to `render_text_regular()` and `render_text_subpixel()`
-pub struct TextCache<'a, Font: ThreadSafeFont> {
+pub struct TextCache<'a, F: ThreadSafeFont> {
 	// (char, foreground) -> (texture, width, height, x_offset, y_offset)
 	pub(crate) map_regular: HashMap<(char, Color), (Texture<'a>, u32, u32, f32, f32)>,
 	pub(crate) set_regular: HashSet<(char, Color)>,
@@ -20,13 +20,13 @@ pub struct TextCache<'a, Font: ThreadSafeFont> {
 	// (char, size, foreground, background) -> (texture, width, height, x_offset, y_offset)
 	pub(crate) map_subpixel: HashMap<(char, u32, Color, Color), (Texture<'a>, u32, u32, f32, f32)>,
 	pub(crate) set_subpixel: HashSet<(char, u32, Color, Color)>,
-	pub(crate) font: Font,
+	pub(crate) font: F,
 }
 
-impl<'a, Font: ThreadSafeFont> TextCache<'a, Font> {
+impl<'a, F: ThreadSafeFont> TextCache<'a, F> {
 	/// Creates a new TextCache
 	#[inline]
-	pub fn new(font: Font) -> Self {
+	pub fn new(font: F) -> Self {
 		Self {
 			map_regular: HashMap::new(),
 			set_regular: HashSet::new(),
@@ -36,7 +36,7 @@ impl<'a, Font: ThreadSafeFont> TextCache<'a, Font> {
 		}
 	}
 	/// Switches this cache to a different font (and clears the cache so the characters can be re-rendered)
-	pub fn switch_font(&mut self, new_font: Font) {
+	pub fn switch_font(&mut self, new_font: F) {
 		self.font = new_font;
 		self.clear();
 	}

@@ -3,7 +3,6 @@
 
 
 use std::time::Instant;
-
 use easy_sdl3_text::{self as sdl3_text, ThreadSafeFont};
 use ab_glyph::FontRef;
 use sdl3::pixels::Color;
@@ -42,7 +41,7 @@ fn main() -> Result<()> {
 	// Note: it is strongly suggested that the canvas, texture creator, and text cache are not lumped in with the rest of the program data because of lifetime issues
 	let texture_creator = canvas.texture_creator();
 	let font = FontRef::try_from_slice(include_bytes!("resources/Inter_24pt-Regular.ttf"))?;
-	let mut text_cache = sdl3_text::TextCache::new(&font);
+	let mut text_cache = sdl3_text::TextCache::new(font);
 	
 	let mut app_data = AppData {
 		should_close: false,
@@ -85,7 +84,7 @@ fn handle_event(app_data: &mut AppData, event: Event) -> Result<()> {
 
 
 
-pub fn draw<'a, Font: ThreadSafeFont>(canvas: &mut Canvas<Window>, texture_creator: &'a TextureCreator<WindowContext>, text_cache: &mut sdl3_text::TextCache<'a, Font>) -> Result<()> {
+pub fn draw<'a, F: ThreadSafeFont>(canvas: &mut Canvas<Window>, texture_creator: &'a TextureCreator<WindowContext>, text_cache: &mut sdl3_text::TextCache<'a, F>) -> Result<()> {
 	let start = Instant::now();
 	canvas.set_draw_color(Color::RGB(255, 255, 255));
 	canvas.clear();

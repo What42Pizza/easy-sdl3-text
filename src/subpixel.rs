@@ -6,7 +6,7 @@ use sdl3::{pixels::{Color, PixelFormat}, rect::Rect, render::{Canvas, TextureCre
 
 
 /// Renders text with sub-pixel rendering (limited and a bit slower but looks really nice)
-pub fn render_text_subpixel<'a, Font: ThreadSafeFont>(text: impl AsRef<str>, size: u32, x: i32, mut y: i32, foreground: Color, background: Color, canvas: &mut Canvas<Window>, texture_creator: &'a TextureCreator<WindowContext>, text_cache: &mut TextCache<'a, Font>) -> Result<(), RenderTextError> {
+pub fn render_text_subpixel<'a, F: ThreadSafeFont>(text: impl AsRef<str>, size: u32, x: i32, mut y: i32, foreground: Color, background: Color, canvas: &mut Canvas<Window>, texture_creator: &'a TextureCreator<WindowContext>, text_cache: &mut TextCache<'a, F>) -> Result<(), RenderTextError> {
 	let text = text.as_ref();
 	if text.is_empty() {return Ok(());}
 	let mut font = text_cache.font.as_scaled(PxScale::from(size as f32));

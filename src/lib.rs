@@ -20,11 +20,11 @@
 //! ```rust
 //! use easy_sdl3_text as sdl3_text;
 //! 
-//! pub fn example_draw_function<'a, Font: ThreadSafeFont>(
+//! pub fn example_draw_function<'a, F: ThreadSafeFont>(
 //! 	app_data: &AppData,
 //! 	canvas: &mut Canvas<Window>,
 //! 	texture_creator: &'a TextureCreator<WindowContext>,
-//! 	text_cache: &mut sdl3_text::TextCache<'a, Font>,
+//! 	text_cache: &mut sdl3_text::TextCache<'a, F>,
 //! ) -> anyhow::Result<()> {
 //! 	canvas.set_draw_color(Color::RGB(255, 255, 255));
 //! 	canvas.clear();
