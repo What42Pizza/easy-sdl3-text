@@ -11,8 +11,8 @@ impl<T: Font + Send + Sync> ThreadSafeFont for T {}
 // (char, size, foreground, background) -> (texture, width, height, x_offset, y_offset)
 #[derive(Default)]
 pub struct TextCache<'a> {
-	pub(crate) map: HashMap<(char, usize, Color, Color), (Texture<'a>, u32, u32, f32, f32)>,
-	pub(crate) set: HashSet<(char, usize, Color, Color)>,
+	pub(crate) map: HashMap<(char, u32, Color, Color), (Texture<'a>, u32, u32, f32, f32)>,
+	pub(crate) set: HashSet<(char, u32, Color, Color)>,
 }
 
 impl<'a> TextCache<'a> {

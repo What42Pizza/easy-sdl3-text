@@ -87,7 +87,7 @@ pub fn draw<'a>(canvas: &mut Canvas<Window>, texture_creator: &'a TextureCreator
 	let mut size = height * 0.1;
 	let mut y = size;
 	while size > 10.0 {
-		sdl3_text::render_text_subpixel("Example text 1234567890 !@#$%^&*()_+-=[]{}|;:',.<>/?~", size, (height * 0.1) as i32, y as i32, Color::RGB(30, 30, 30), Color::RGB(255, 255, 255), canvas, texture_creator, text_cache, font)?;
+		sdl3_text::render_text_subpixel("Example text 1234567890 !@#$%^&*()_+-=[]{}|;:',.<>/?~", size as u32, (height * 0.1) as i32, y as i32, Color::RGB(30, 30, 30), Color::RGB(255, 255, 255), canvas, texture_creator, text_cache, font)?;
 		size *= 0.8;
 		y += size * 1.3;
 	}

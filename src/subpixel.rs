@@ -5,28 +5,30 @@ use sdl3::{pixels::{Color, PixelFormat}, rect::Rect, render::{Canvas, TextureCre
 
 
 
-pub fn render_text_subpixel<'a>(text: impl AsRef<str>, size: f32, x: i32, mut y: i32, foreground: Color, background: Color, canvas: &mut Canvas<Window>, texture_creator: &'a TextureCreator<WindowContext>, text_cache: &mut TextCache<'a>, font: &impl ThreadSafeFont) -> Result<(), RenderTextError> {
+pub fn render_text_subpixel<'a>(text: impl AsRef<str>, size: u32, x: i32, mut y: i32, foreground: Color, background: Color, canvas: &mut Canvas<Window>, texture_creator: &'a TextureCreator<WindowContext>, text_cache: &mut TextCache<'a>, font: &impl ThreadSafeFont) -> Result<(), RenderTextError> {
 	let text = text.as_ref();
 	if text.is_empty() {return Ok(());}
-	let mut font = font.as_scaled(PxScale::from(size));
+	let mut font = font.as_scaled(PxScale::from(size as f32));
 	font.scale.x *= 3.0; // for sub-pixel rendering
 	let mut glyphs = Vec::with_capacity(text.len());
 	let new_textures = Mutex::new(vec!());
+	// convert chars to glyphs & rasterize uncached glyphs
 	rayon::scope(|s| {
 		for c in text.chars() {
 			let glyph = font.scaled_glyph(c);
-			let is_new = text_cache.set.insert((c, (size * 100.0) as usize, foreground, background));
+			let is_new = text_cache.set.insert((c, size, foreground, background));
 			if is_new {
 				let new_textures = &new_textures;
 				let glyph = glyph.clone();
 				s.spawn(move |_s| {
-					let result = ensure_glyph_is_rasterized(glyph.clone(), c, foreground, background, &font);
+					let result = rasterize_glyph_subpixel(glyph.clone(), c, foreground, background, &font);
 					new_textures.lock().unwrap().push(result);
 				});
 			}
 			glyphs.push((c, glyph));
 		}
 	});
+	// upload new glyph textures to gpu
 	for texture_data in new_textures.into_inner().unwrap() {
 		let Some((c, pixels, width, height, x_offset, y_offset)) = texture_data else {continue;};
 		let mut texture = texture_creator.create_texture(
@@ -36,36 +38,38 @@ pub fn render_text_subpixel<'a>(text: impl AsRef<str>, size: f32, x: i32, mut y:
 			height,
 		)?;
 		texture.update(None, &pixels, width as usize * 4)?;
-		text_cache.map.insert((c, (size * 100.0) as usize, foreground, background), (texture, width, height, x_offset, y_offset));
+		text_cache.map.insert((c, size, foreground, background), (texture, width, height, x_offset, y_offset));
 	}
+	// render first char
 	font.scale.x /= 3.0; // undo sub-pixel rendering for spacing
 	let mut x = x as f32;
 	y += font.height() as i32 * 75 / 100;
 	if let Some((c, glyph)) = glyphs.first() {
-		let texture_data = text_cache.map.get(&(*c, (size * 100.0) as usize, foreground, background));
+		let texture_data = text_cache.map.get(&(*c, size, foreground, background));
 		if let Some((texture, width, height, x_offset, y_offset)) = texture_data {
 			let dst = Rect::new((x - *x_offset) as i32, y - *y_offset as i32, *width, *height);
 			canvas.copy(texture, None, dst)?;
 		}
 		x += font.h_advance(glyph.id);
 	}
+	// render remaining chars (with kerning)
 	for [(_prev_c, prev_glyph), (c, glyph)] in glyphs.array_windows() {
 		x += font.kern(prev_glyph.id, glyph.id);
-		let texture_data = text_cache.map.get(&(*c, (size * 100.0) as usize, foreground, background));
+		let texture_data = text_cache.map.get(&(*c, size, foreground, background));
 		if let Some((texture, width, height, x_offset, y_offset)) = texture_data {
 			let dst = Rect::new((x - *x_offset) as i32, y - *y_offset as i32, *width, *height);
 			canvas.copy(texture, None, dst)?;
 		}
 		x += font.h_advance(glyph.id);
-		x += size * 0.03;
-		if c.is_whitespace() {x += size * 0.04;}
+		x += size as f32 * 0.03;
+		if c.is_whitespace() {x += size as f32 * 0.04;}
 	}
 	Ok(())
 }
 
 
 
-pub fn ensure_glyph_is_rasterized(glyph: Glyph, c: char, foreground: Color, background: Color, font: &PxScaleFont<&impl ThreadSafeFont>) -> Option<(char, Vec<u8>, u32, u32, f32, f32)> {
+pub fn rasterize_glyph_subpixel(glyph: Glyph, c: char, foreground: Color, background: Color, font: &PxScaleFont<&impl ThreadSafeFont>) -> Option<(char, Vec<u8>, u32, u32, f32, f32)> {
 	
 	let Some(glyph) = font.outline_glyph(glyph) else {return None;};
 	let bounds = glyph.px_bounds();
