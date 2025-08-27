@@ -24,7 +24,7 @@ fn main() -> Result<()> {
 	let sdl_context = sdl3::init().unwrap();
 	let video_subsystem = sdl_context.video().unwrap();
 	let window = video_subsystem
-		.window("Text Example", 800, 600)
+		.window("Text Example", 1400, 600)
 		.position_centered()
 		.resizable()
 		.hidden()
@@ -39,16 +39,16 @@ fn main() -> Result<()> {
 	canvas.window_mut().show();
 	
 	let texture_creator = canvas.texture_creator();
-	let mut text_cache = sdl3_text::TextCache::default();
+	let mut text_cache = sdl3_text::TextCache::new();
 	let font = FontRef::try_from_slice(include_bytes!("resources/Inter_24pt-Regular.ttf"))?;
 	
-	let mut data = AppData {
+	let mut app_data = AppData {
 		should_close: false,
 	};
 	
-	while !data.should_close {
+	while !app_data.should_close {
 		
-		for event in event_pump.poll_iter() { handle_event(&mut data, event)?; }
+		for event in event_pump.poll_iter() { handle_event(&mut app_data, event)?; }
 		
 		draw(&mut canvas, &texture_creator, &mut text_cache, &font)?;
 		
@@ -59,14 +59,14 @@ fn main() -> Result<()> {
 
 
 
-fn handle_event(data: &mut AppData, event: Event) -> Result<()> {
+fn handle_event(app_data: &mut AppData, event: Event) -> Result<()> {
 	match event {
 		
-		Event::Quit { timestamp: _ } => data.should_close = true,
+		Event::Quit { timestamp: _ } => app_data.should_close = true,
 		
 		Event::KeyDown { timestamp: _, window_id: _, keycode, scancode: _, keymod, repeat: _, which: _, raw: _ } => {
-			if keycode == Some(sdl3::keyboard::Keycode::W) && (keymod.contains(Mod::RCTRLMOD) || keymod.contains(Mod::LCTRLMOD)) {
-				data.should_close = true;
+			if (keycode == Some(sdl3::keyboard::Keycode::W) || keycode == Some(sdl3::keyboard::Keycode::Q)) && (keymod.contains(Mod::RCTRLMOD) || keymod.contains(Mod::LCTRLMOD)) {
+				app_data.should_close = true;
 			}
 		}
 		
