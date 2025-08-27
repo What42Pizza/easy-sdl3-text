@@ -35,7 +35,7 @@ fn main() -> Result<()> {
 		sdl3::sys::render::SDL_SetRenderVSync(canvas.raw(), 1);
 	}
 	
-	// 
+	// the window starts hidden to avoid weird startup visuals, so make it show here
 	canvas.present();
 	canvas.window_mut().show();
 	
