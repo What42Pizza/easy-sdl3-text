@@ -82,7 +82,7 @@ pub fn draw<'a>(canvas: &mut Canvas<Window>, texture_creator: &'a TextureCreator
 	canvas.set_draw_color(Color::RGB(255, 255, 255));
 	canvas.clear();
 	let (width, height) = canvas.output_size()?;
-	let (width, height) = (width as f32, height as f32);
+	let (_width, height) = (width as f32, height as f32);
 	
 	let mut size = height * 0.1;
 	let mut y = size;
