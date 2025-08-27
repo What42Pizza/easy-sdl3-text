@@ -2,7 +2,12 @@
 name = "easy-sdl3-text"
 version = "0.1.0"
 edition = "2024"
-license = "MIT"
+license = "CC0 1.0 Universal"
+description = "Easy text rendering for sdl3 (includes sub-pixel rendering)"
+repository = "https://github.com/What42Pizza/easy-sdl3-text"
+readme = "README.md"
+keywords = ["sdl3", "text", "rendering", "subpixel", "ttf"]
+categories = ["rendering", "graphics", "gui"]
 
 [dependencies]
 ab_glyph = "0.2.31"

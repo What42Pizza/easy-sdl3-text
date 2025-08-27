@@ -65,3 +65,10 @@ pub use subpixel::*;
 /// All data types for this crate
 pub mod data;
 pub use data::*;
+
+
+
+pub(crate) const EXTRA_CHAR_SPACING: f32 = 0.03;
+pub(crate) const EXTRA_WHITESPACE_SPACING: f32 = 0.04; // Note: this is added on top of EXTRA_CHAR_SPACING
+pub(crate) const REGULAR_VALUE_POW: f32 = 0.7; // affects how dark the edges are
+pub(crate) const SUBPIXEL_VALUE_POW: f32 = 0.9;

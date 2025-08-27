@@ -51,6 +51,8 @@ pub fn render_text_regular<'a, Font: ThreadSafeFont>(text: impl AsRef<str>, size
 			canvas.copy(texture, None, dst)?;
 		}
 		x += font.h_advance(glyph.id);
+		x += size as f32 * EXTRA_CHAR_SPACING;
+		if c.is_whitespace() {x += size as f32 * EXTRA_WHITESPACE_SPACING;}
 	}
 	// render remaining chars (with kerning)
 	for [(_prev_c, prev_glyph), (c, glyph)] in glyphs.array_windows() {
@@ -61,8 +63,8 @@ pub fn render_text_regular<'a, Font: ThreadSafeFont>(text: impl AsRef<str>, size
 			canvas.copy(texture, None, dst)?;
 		}
 		x += font.h_advance(glyph.id);
-		x += size as f32 * 0.03;
-		if c.is_whitespace() {x += size as f32 * 0.04;}
+		x += size as f32 * EXTRA_CHAR_SPACING;
+		if c.is_whitespace() {x += size as f32 * EXTRA_WHITESPACE_SPACING;}
 	}
 	Ok(())
 }
@@ -80,7 +82,7 @@ fn rasterize_glyph_regular(glyph: Glyph, c: char, foreground: Color, font: &PxSc
 	let height = bounds.height().ceil() as u32;
 	let mut pixels = foreground.repeat((width * height) as usize);
 	glyph.draw(|x, y, v| {
-		pixels[((x + y * width) * 4 + 3) as usize] = (alpha * v.powf(0.7)) as u8;
+		pixels[((x + y * width) * 4 + 3) as usize] = (alpha * v.powf(REGULAR_VALUE_POW)) as u8;
 	});
 	
 	Some((c, pixels, width, height, -bounds.min.x, -bounds.min.y))

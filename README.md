@@ -50,3 +50,7 @@ pub fn example_draw_function<'a, Font: ThreadSafeFont>(
 	Ok(())
 }
 ```
+
+<br>
+
+This crate and all its code is dedicated to the public domain, being licensed under [CC0 1.0 Universal](LICENSE)

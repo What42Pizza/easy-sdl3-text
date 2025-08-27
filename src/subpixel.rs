@@ -42,7 +42,7 @@ pub fn render_text_subpixel<'a, Font: ThreadSafeFont>(text: impl AsRef<str>, siz
 		text_cache.map_subpixel.insert((c, size, foreground, background), (texture, width, height, x_offset, y_offset));
 	}
 	// render first char
-	font.scale.x /= 3.0; // undo sub-pixel rendering for spacing
+	font.scale.x /= 3.0; // undo sub-pixel rendering scaling to do spacing
 	let mut x = x as f32;
 	y += font.height() as i32 * 75 / 100;
 	if let Some((c, glyph)) = glyphs.first() {
@@ -52,6 +52,8 @@ pub fn render_text_subpixel<'a, Font: ThreadSafeFont>(text: impl AsRef<str>, siz
 			canvas.copy(texture, None, dst)?;
 		}
 		x += font.h_advance(glyph.id);
+		x += size as f32 * EXTRA_CHAR_SPACING;
+		if c.is_whitespace() {x += size as f32 * EXTRA_WHITESPACE_SPACING;}
 	}
 	// render remaining chars (with kerning)
 	for [(_prev_c, prev_glyph), (c, glyph)] in glyphs.array_windows() {
@@ -62,8 +64,8 @@ pub fn render_text_subpixel<'a, Font: ThreadSafeFont>(text: impl AsRef<str>, siz
 			canvas.copy(texture, None, dst)?;
 		}
 		x += font.h_advance(glyph.id);
-		x += size as f32 * 0.03;
-		if c.is_whitespace() {x += size as f32 * 0.04;}
+		x += size as f32 * EXTRA_CHAR_SPACING;
+		if c.is_whitespace() {x += size as f32 * EXTRA_WHITESPACE_SPACING;}
 	}
 	Ok(())
 }
@@ -77,7 +79,7 @@ fn rasterize_glyph_subpixel(glyph: Glyph, c: char, foreground: Color, background
 	
 	let foreground = [foreground.r, foreground.g, foreground.b, foreground.a];
 	let background = [background.r, background.g, background.b, background.a];
-	let width = bounds.width().ceil() as u32 / 3 + 3; // Note: this is the width of the final image
+	let width = bounds.width().ceil() as u32 / 3 + 3; // Note: this is the width of the final image, not the `channel_datas`
 	let height = bounds.height().ceil() as u32 + 2;
 	let mut channel_datas = vec![0.0; (width * 3 * height) as usize];
 	glyph.draw(|x, y, v| {
@@ -117,21 +119,21 @@ fn rasterize_glyph_subpixel(glyph: Glyph, c: char, foreground: Color, background
 				total += channel_datas_alt[i + (width * 3) as usize] * 0.00504176;
 				total_weight += 0.00504176;
 			}
-			channel_datas[i] = (total / total_weight).powf(0.9);
+			channel_datas[i] = (total / total_weight).powf(SUBPIXEL_VALUE_POW);
 		}
 	}
 	let mut pixels = vec![0; (width * 4 * height) as usize];
 	for x in 0..width as usize {
 		for y in 0..height as usize {
-			let red_value = (channel_datas[x * 3 + y * (width * 3) as usize] * 255.0) as u16;
+			let red_value   = (channel_datas[x * 3     + y * (width * 3) as usize] * 255.0) as u16;
 			let green_value = (channel_datas[x * 3 + 1 + y * (width * 3) as usize] * 255.0) as u16;
-			let blue_value = (channel_datas[x * 3 + 2 + y * (width * 3) as usize] * 255.0) as u16;
+			let blue_value  = (channel_datas[x * 3 + 2 + y * (width * 3) as usize] * 255.0) as u16;
 			let alpha_value = (red_value + green_value + blue_value) / 3;
-			let red = background[0] as u16 * (255 - red_value) / 255 + foreground[0] as u16 * red_value / 255;
+			let red   = background[0] as u16 * (255 - red_value  ) / 255 + foreground[0] as u16 * red_value   / 255;
 			let green = background[1] as u16 * (255 - green_value) / 255 + foreground[1] as u16 * green_value / 255;
-			let blue = background[2] as u16 * (255 - blue_value) / 255 + foreground[2] as u16 * blue_value / 255;
+			let blue  = background[2] as u16 * (255 - blue_value ) / 255 + foreground[2] as u16 * blue_value  / 255;
 			let alpha = background[3] as u16 * (255 - alpha_value) / 255 + foreground[3] as u16 * alpha_value / 255;
-			pixels[(x + y * width as usize) * 4] = red as u8;
+			pixels[(x + y * width as usize) * 4    ] = red as u8;
 			pixels[(x + y * width as usize) * 4 + 1] = green as u8;
 			pixels[(x + y * width as usize) * 4 + 2] = blue as u8;
 			pixels[(x + y * width as usize) * 4 + 3] = alpha as u8;
