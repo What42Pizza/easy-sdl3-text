@@ -37,6 +37,7 @@
 //! 		"Example text",
 //! 		size,
 //! 		x, y,
+//! 		sdl3_text::HAlign::Left, sdl3_text::VAlign::Center,
 //! 		foreground, background,
 //! 		canvas,
 //! 		texture_creator,
@@ -51,6 +52,7 @@
 
 
 #![warn(missing_docs)]
+#![allow(clippy::tabs_in_doc_comments)]
 
 #![feature(array_windows)]
 
@@ -72,3 +74,4 @@ pub(crate) const EXTRA_CHAR_SPACING: f32 = 0.03;
 pub(crate) const EXTRA_WHITESPACE_SPACING: f32 = 0.04; // Note: this is added on top of EXTRA_CHAR_SPACING
 pub(crate) const REGULAR_VALUE_POW: f32 = 0.7; // affects how dark the edges are
 pub(crate) const SUBPIXEL_VALUE_POW: f32 = 0.9;
+pub(crate) const TEXT_HEIGHT_MULT: f32 = 0.63; // This is the ratio of actual rendered height to given text size

@@ -5,7 +5,7 @@
 use std::time::Instant;
 use easy_sdl3_text::{self as sdl3_text, ThreadSafeFont};
 use ab_glyph::FontRef;
-use sdl3::pixels::Color;
+use sdl3::{mouse::MouseState, pixels::Color, render::FRect};
 pub use sdl3::{render::Canvas, video::Window, event::Event, keyboard::Mod, render::{Texture, TextureCreator}, video::WindowContext};
 pub use anyhow::*;
 
@@ -41,7 +41,7 @@ fn main() -> Result<()> {
 	// Note: it is strongly suggested that the canvas, texture creator, and text cache are not lumped in with the rest of the program data because of lifetime issues
 	let texture_creator = canvas.texture_creator();
 	let font = FontRef::try_from_slice(include_bytes!("resources/Inter_24pt-Regular.ttf"))?;
-	let mut text_cache = sdl3_text::TextCache::new(&font);
+	let mut text_cache = sdl3_text::TextCache::new(font);
 	
 	let mut app_data = AppData {
 		should_close: false,
@@ -56,7 +56,8 @@ fn main() -> Result<()> {
 		// other program logic can go here
 		
 		// render
-		draw(&mut canvas, &texture_creator, &mut text_cache)?;
+		let mouse_state = event_pump.mouse_state();
+		draw(&mut canvas, &texture_creator, &mut text_cache, mouse_state)?;
 		
 	}
 	
@@ -84,19 +85,23 @@ fn handle_event(app_data: &mut AppData, event: Event) -> Result<()> {
 
 
 
-pub fn draw<'a, F: ThreadSafeFont>(canvas: &mut Canvas<Window>, texture_creator: &'a TextureCreator<WindowContext>, text_cache: &mut sdl3_text::TextCache<'a, F>) -> Result<()> {
+pub fn draw<'a, F: ThreadSafeFont>(canvas: &mut Canvas<Window>, texture_creator: &'a TextureCreator<WindowContext>, text_cache: &mut sdl3_text::TextCache<'a, F>, mouse_state: MouseState) -> Result<()> {
 	let start = Instant::now();
 	canvas.set_draw_color(Color::RGB(255, 255, 255));
 	canvas.clear();
-	let scale = canvas.output_size()?.1 as f32;
+	let canvas_size = canvas.output_size()?;
+	let (width, height) = (canvas_size.0 as f32, canvas_size.1 as f32);
 	
-	let mut size = scale * 0.1;
-	let mut y = size;
-	while size > 10.0 {
-		sdl3_text::render_text_subpixel("Example text 1234567890 !@#$%^&*()_+-=[]{}|;:',.<>/?~", size as u32, (scale * 0.1) as i32, y as i32, sdl3_text::HAlign::Left, sdl3_text::VAlign::Center, Color::RGB(30, 30, 30), Color::RGB(255, 255, 255), canvas, texture_creator, text_cache)?;
-		size *= 0.8;
-		y += size * 1.3;
-	}
+	canvas.set_draw_color(Color::RGB(0, 0, 0));
+	canvas.fill_rect(FRect::new(0.0, height * 0.5, width, 1.0))?;
+	canvas.fill_rect(FRect::new(width * 0.5, 0.0, 1.0, height))?;
+	
+	let (mouse_x, mouse_y) = (mouse_state.x(), mouse_state.y());
+	let indicator_width = (mouse_x - width * 0.5).abs() * 2.0;
+	let indicator_height = (mouse_y - height * 0.5).abs() * 2.0;
+	canvas.draw_rect(FRect::new(width * 0.5 - indicator_width * 0.5, height * 0.5 - indicator_height * 0.5, indicator_width, indicator_height))?;
+	
+	sdl3_text::render_text_regular("Example text 1234567890 !@#$%^&*()_+-=[]{}|;:',.<>/?~", height * 0.07, width as i32 / 2, height as i32 / 2, sdl3_text::HAlign::Center, sdl3_text::VAlign::Center, Color::RGB(30, 30, 30), canvas, texture_creator, text_cache)?;
 	
 	let millis = start.elapsed().as_millis();
 	if millis > 0 {println!("Draw time exceeds 0 ms: {millis} ms");}

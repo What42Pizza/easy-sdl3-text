@@ -93,7 +93,7 @@ pub fn draw<'a, F: ThreadSafeFont>(canvas: &mut Canvas<Window>, texture_creator:
 	let mut size = scale * 0.1;
 	let mut y = size;
 	while size > 10.0 {
-		sdl3_text::render_text_regular("Example text 1234567890 !@#$%^&*()_+-=[]{}|;:',.<>/?~", size, (scale * 0.1) as i32, y as i32, Color::RGB(30, 30, 30), canvas, texture_creator, text_cache)?;
+		sdl3_text::render_text_regular("Example text 1234567890 !@#$%^&*()_+-=[]{}|;:',.<>/?~", size, (scale * 0.1) as i32, y as i32, sdl3_text::HAlign::Left, sdl3_text::VAlign::Center, Color::RGB(30, 30, 30), canvas, texture_creator, text_cache)?;
 		size *= 0.8;
 		y += size * 1.3;
 	}

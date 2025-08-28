@@ -3,8 +3,10 @@
 <br>
 
 - **v0.2.0**
-  - Changed `TextCache::new()` to take ownership of the given font
-  - Added function `TextCache::switch_font()`
+  - Added text alignment and `TextCache::switch_font()`
+  - Api changes:
+    - `TextCache::new()` now takes `ThreadSafeFont` instead of `&ThreadSafeFont`
+	- `render_text_regular()` and `render_text_subpixel()` now take two more arguments: `h_align: sdl3_text::HAlign` and `v_align: sdl3_text::VAlign`
   - Still depends on sdl3 version "0.14", ab_glyph version "0.2", and rayon version "1"
 
 <br>

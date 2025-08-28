@@ -1,3 +1,4 @@
+use crate::*;
 use std::collections::{HashMap, HashSet};
 use sdl3::{pixels::Color, render::{Texture, TextureValueError, UpdateTextureError}, Error};
 use ab_glyph::Font;
@@ -46,6 +47,48 @@ impl<'a, F: ThreadSafeFont> TextCache<'a, F> {
 		self.set_regular.clear();
 		self.map_subpixel.clear();
 		self.set_subpixel.clear();
+	}
+}
+
+
+
+/// Horizontal alignment
+pub enum HAlign {
+	/// Treats the 'x' value as the left edge
+	Left,
+	/// Treats the 'x' value as the text middle
+	Center,
+	/// Treats the 'x' value as the right edge
+	Right,
+}
+
+impl HAlign {
+	pub(crate) fn get_offset(&self, width: f32) -> f32 {
+		match self {
+			Self::Left => 0.0,
+			Self::Center => width * -0.5,
+			Self::Right => -width,
+		}
+	}
+}
+
+/// Vertical alignment
+pub enum VAlign {
+	/// Treats the 'x' value as the top edge
+	Top,
+	/// Treats the 'x' value as the text middle
+	Center,
+	/// Treats the 'x' value as the bottom edge
+	Bottom,
+}
+
+impl VAlign {
+	pub(crate) fn get_offset(&self, height: f32) -> f32 {
+		match self {
+			Self::Top => height * TEXT_HEIGHT_MULT,
+			Self::Center => height * TEXT_HEIGHT_MULT * 0.5,
+			Self::Bottom => 0.0,
+		}
 	}
 }
 

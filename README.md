@@ -42,6 +42,7 @@ pub fn example_draw_function<'a, F: ThreadSafeFont>(
 		"Example text",
 		size,
 		x, y,
+		sdl3_text::HAlign::Left, sdl3_text::VAlign::Center,
 		foreground, background,
 		canvas,
 		texture_creator,
