@@ -3,6 +3,7 @@
 This crate adds easy text rendering function for sdl3 using [ab_glyph](https://crates.io/crates/ab_glyph). Current features:
 - Cache for reusing textures
 - Both regular and sub-pixel rendering
+- Vertical and horizontal alignment
 - Multithreaded rasterization
 - Pure rust, no compilation headaches
 

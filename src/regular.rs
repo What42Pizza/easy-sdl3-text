@@ -6,8 +6,8 @@ use sdl3::{pixels::{Color, PixelFormat}, rect::Rect, render::{Canvas, TextureCre
 
 
 /// Renders text without sub-pixel rendering (a bit faster and easier to use, but looks a bit pixelated)
-pub fn render_text_regular<'a, F: ThreadSafeFont>(text: impl AsRef<str>, size: f32, x: i32, y: i32, h_align: HAlign, v_align: VAlign, foreground: Color, canvas: &mut Canvas<Window>, texture_creator: &'a TextureCreator<WindowContext>, text_cache: &mut TextCache<'a, F>) -> Result<(), RenderTextError> {
-	let text = text.as_ref();
+pub fn render_text_regular<'a, F: ThreadSafeFont>(text: impl AsRef<str>, size: f32, x: i32, y: i32, h_align: impl Into<HAlign>, v_align: impl Into<VAlign>, foreground: Color, canvas: &mut Canvas<Window>, texture_creator: &'a TextureCreator<WindowContext>, text_cache: &mut TextCache<'a, F>) -> Result<(), RenderTextError> {
+	let (text, h_align, v_align) = (text.as_ref(), h_align.into(), v_align.into());
 	if text.is_empty() {return Ok(());}
 	let font = text_cache.font.as_scaled(PxScale::from(100.0));
 	

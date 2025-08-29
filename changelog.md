@@ -2,7 +2,13 @@
 
 <br>
 
-- **v0.2.0**
+- v0.2.1
+  - Api changes:
+    - `render_text_regular()` and `render_text_subpixel()` now take `Into<HAlign>` and `Into<VAlign>` instead of `HAlign` and `VAlign`
+
+<br>
+
+- **v0.2.0:** (25/08/28)
   - Added text alignment and `TextCache::switch_font()`
   - Api changes:
     - `TextCache::new()` now takes `ThreadSafeFont` instead of `&ThreadSafeFont`
