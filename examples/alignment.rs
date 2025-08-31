@@ -101,7 +101,9 @@ pub fn draw<'a, F: ThreadSafeFont>(canvas: &mut Canvas<Window>, texture_creator:
 	let indicator_height = (mouse_y - height * 0.5).abs() * 2.0;
 	canvas.draw_rect(FRect::new(width * 0.5 - indicator_width * 0.5, height * 0.5 - indicator_height * 0.5, indicator_width, indicator_height))?;
 	
-	sdl3_text::render_text_regular("Example text 1234567890 !@#$%^&*()_+-=[]{}|;:',.<>/?~", height * 0.07, width as i32 / 2, height as i32 / 2, sdl3_text::HAlign::Center, sdl3_text::VAlign::Center, Color::RGB(30, 30, 30), canvas, texture_creator, text_cache)?;
+	
+	let mut text_settings = sdl3_text::TextRenderingSettings::new_regular(height * 0.07, sdl3_text::HAlign::Center, sdl3_text::VAlign::Center, Color::RGB(30, 30, 30), canvas, texture_creator, text_cache);
+	sdl3_text::render_text_regular("Example text 1234567890 !@#$%^&*()_+-=[]{}|;:',.<>/?~", width as i32 / 2, height as i32 / 2, &mut text_settings)?;
 	
 	let millis = start.elapsed().as_millis();
 	if millis > 0 {println!("Draw time exceeds 0 ms: {millis} ms");}

@@ -2,9 +2,9 @@
 
 <br>
 
-- v0.2.1
+- **v0.3.0:** (25/08/31)
   - Api changes:
-    - `render_text_regular()` and `render_text_subpixel()` now take `Into<HAlign>` and `Into<VAlign>` instead of `HAlign` and `VAlign`
+    - `render_text_regular()` and `render_text_subpixel()` now take `TextRenderingSettings` in place of multiple other arguments
   - Tweaked character spacing
 
 <br>

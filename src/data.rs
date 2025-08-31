@@ -1,7 +1,60 @@
 use crate::*;
 use std::collections::{HashMap, HashSet};
-use sdl3::{pixels::Color, render::{Texture, TextureValueError, UpdateTextureError}, Error};
+use sdl3::{pixels::Color, render::{Canvas, Texture, TextureCreator, TextureValueError, UpdateTextureError}, video::{Window, WindowContext}, Error};
 use ab_glyph::Font;
+
+
+
+/// This is a holder for most of the arguments to `render_text_regular()` and `render_text_subpixel()`
+pub struct TextRenderingSettings<'a, 'b, F: ThreadSafeFont> {
+	/// NOTE: for `render_text_subpixel()`, this is converted to u32 (this is don to significantly cut down on the number of character textures to rasterize and cache)
+	pub size: f32,
+	#[allow(missing_docs)]
+	pub h_align: HAlign,
+	#[allow(missing_docs)]
+	pub v_align: VAlign,
+	#[allow(missing_docs)]
+	pub foreground: Color,
+	/// This only exists for `render_text_subpixel()`, with `render_text_regular()` you can set this to whatever you want and it won't affect anything
+	pub background: Color,
+	#[allow(missing_docs)]
+	pub canvas: &'a mut Canvas<Window>,
+	#[allow(missing_docs)]
+	pub texture_creator: &'b TextureCreator<WindowContext>,
+	#[allow(missing_docs)]
+	pub text_cache: &'a mut TextCache<'b, F>,
+}
+
+impl<'a, 'b, F:ThreadSafeFont> TextRenderingSettings<'a, 'b, F> {
+	/// Creates a new `TextRenderingSettings` that is meant to be used with `render_text_regular()`, but can also be used for subpixel rendering
+	#[allow(clippy::too_many_arguments)]
+	pub fn new_regular(size: f32, h_align: impl Into<HAlign>, v_align: impl Into<VAlign>, foreground: Color, canvas: &'a mut Canvas<Window>, texture_creator: &'b TextureCreator<WindowContext>, text_cache: &'a mut TextCache<'b, F>) -> Self {
+		Self {
+			size,
+			h_align: h_align.into(),
+			v_align: v_align.into(),
+			foreground,
+			background: Color::RGB(127, 127, 127),
+			canvas,
+			texture_creator,
+			text_cache,
+		}
+	}
+	/// Creates a new `TextRenderingSettings` that is meant to be used with `render_text_subpixel()`, but can also be used for regular rendering
+	#[allow(clippy::too_many_arguments)]
+	pub fn new_subpixel(size: u32, h_align: impl Into<HAlign>, v_align: impl Into<VAlign>, foreground: Color, background: Color, canvas: &'a mut Canvas<Window>, texture_creator: &'b TextureCreator<WindowContext>, text_cache: &'a mut TextCache<'b, F>) -> Self {
+		Self {
+			size: size as f32,
+			h_align: h_align.into(),
+			v_align: v_align.into(),
+			foreground,
+			background,
+			canvas,
+			texture_creator,
+			text_cache,
+		}
+	}
+}
 
 
 
@@ -53,6 +106,7 @@ impl<'a, F: ThreadSafeFont> TextCache<'a, F> {
 
 
 /// Horizontal alignment
+#[derive(Copy, Clone)]
 pub enum HAlign {
 	/// Treats the 'x' value as the left edge
 	Left,
@@ -73,6 +127,7 @@ impl HAlign {
 }
 
 /// Vertical alignment
+#[derive(Copy, Clone)]
 pub enum VAlign {
 	/// Treats the 'x' value as the top edge
 	Top,

@@ -3,7 +3,7 @@
 
 
 use std::time::Instant;
-use easy_sdl3_text::{self as sdl3_text, ThreadSafeFont};
+use easy_sdl3_text as sdl3_text;
 use ab_glyph::FontRef;
 use sdl3::pixels::Color;
 pub use sdl3::{render::Canvas, video::Window, event::Event, keyboard::Mod, render::{Texture, TextureCreator}, video::WindowContext};
@@ -84,17 +84,20 @@ fn handle_event(app_data: &mut AppData, event: Event) -> Result<()> {
 
 
 
-pub fn draw<'a, F: ThreadSafeFont>(canvas: &mut Canvas<Window>, texture_creator: &'a TextureCreator<WindowContext>, text_cache: &mut sdl3_text::TextCache<'a, F>) -> Result<()> {
+pub fn draw<'a, F: sdl3_text::ThreadSafeFont>(canvas: &mut Canvas<Window>, texture_creator: &'a TextureCreator<WindowContext>, text_cache: &mut sdl3_text::TextCache<'a, F>) -> Result<()> {
 	let start = Instant::now();
 	canvas.set_draw_color(Color::RGB(255, 255, 255));
 	canvas.clear();
 	let scale = canvas.output_size()?.1 as f32;
 	
+	let mut text_settings = sdl3_text::TextRenderingSettings::new_regular(scale * 0.1, sdl3_text::HAlign::Left, sdl3_text::VAlign::Center, Color::RGB(30, 30, 30), canvas, texture_creator, text_cache);
+	
 	let mut size = scale * 0.1;
 	let mut y = size;
 	while size > 10.0 {
-		sdl3_text::render_text_regular("Example text 1234567890 !@#$%^&*()_+-=[]{}|;:',.<>/?~", size, (scale * 0.1) as i32, y as i32, sdl3_text::HAlign::Left, sdl3_text::VAlign::Center, Color::RGB(30, 30, 30), canvas, texture_creator, text_cache)?;
+		sdl3_text::render_text_regular("Example text 1234567890 !@#$%^&*()_+-=[]{}|;:',.<>/?~", (scale * 0.1) as i32, y as i32, &mut text_settings)?;
 		size *= 0.8;
+		text_settings.size = size;
 		y += size * 1.3;
 	}
 	

@@ -24,31 +24,34 @@ This might work best as a starting point for you to make your own text rendering
 **Example Code:**
 
 ```rust
-use easy_sdl3_text as sdl3_text;
+use easy_sdl3_text::*;
 
 pub fn example_draw_function<'a, F: ThreadSafeFont>(
 	app_data: &AppData,
 	canvas: &mut Canvas<Window>,
 	texture_creator: &'a TextureCreator<WindowContext>,
-	text_cache: &mut sdl3_text::TextCache<'a, F>,
+	text_cache: &mut TextCache<'a, F>,
 ) -> anyhow::Result<()> {
 	canvas.set_draw_color(Color::RGB(255, 255, 255));
 	canvas.clear();
 	
-	let size = 25;
-	let (x, y) = (50, 50);
+	let size: u32 = 25;
+	let (mut x, mut y): (i32, i32) = (50, 50);
 	let foreground = Color::RGB(30, 30, 30);
 	let background = Color::RGB(255, 255, 255);
-	sdl3_text::render_text_subpixel(
-		"Example text",
+	
+	// most arguments to the rendering functions stay the same, so they're all put into a reusable struct
+	let mut text_rendering_settings = TextRenderingSettings::new_subpixel(
 		size,
-		x, y,
-		sdl3_text::HAlign::Left, sdl3_text::VAlign::Center,
+		HAlign::Left, VAlign::Center,
 		foreground, background,
-		canvas,
-		texture_creator,
-		text_cache,
-	)?;
+		canvas, texture_creator, text_cache
+	);
+	
+	render_text_subpixel("Example text", x, y, &mut text_rendering_settings)?;
+	y += size as i32;
+	render_text_subpixel("More example text", x, y, &mut text_rendering_settings)?;
+	y += size as i32;
 	
 	canvas.present();
 	Ok(())

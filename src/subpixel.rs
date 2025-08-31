@@ -1,24 +1,25 @@
 use crate::*;
 use std::{f32, sync::Mutex};
 use ab_glyph::{Glyph, PxScale, PxScaleFont, ScaleFont};
-use sdl3::{pixels::{Color, PixelFormat}, rect::Rect, render::{Canvas, TextureCreator}, sys::pixels::SDL_PixelFormat, video::{Window, WindowContext}};
+use sdl3::{pixels::{Color, PixelFormat}, rect::Rect, sys::pixels::SDL_PixelFormat};
 
 
 
 /// Renders text with sub-pixel rendering (limited and a bit slower but looks really nice)
-pub fn render_text_subpixel<'a, F: ThreadSafeFont>(text: impl AsRef<str>, size: u32, x: i32, y: i32, h_align: impl Into<HAlign>, v_align: impl Into<VAlign>, foreground: Color, background: Color, canvas: &mut Canvas<Window>, texture_creator: &'a TextureCreator<WindowContext>, text_cache: &mut TextCache<'a, F>) -> Result<(), RenderTextError> {
-	let (text, h_align, v_align) = (text.as_ref(), h_align.into(), v_align.into());
+pub fn render_text_subpixel<'a, 'b, F: ThreadSafeFont>(text: impl AsRef<str>, x: i32, y: i32, settings: &mut TextRenderingSettings<'a, 'b, F>) -> Result<(), RenderTextError> {
+	let (text, size, h_align, v_align, foreground, background, texture_creator) = (text.as_ref(), settings.size as u32, settings.h_align, settings.v_align, settings.foreground, settings.background, settings.texture_creator);
 	if text.is_empty() {return Ok(());}
-	let mut font = text_cache.font.as_scaled(PxScale::from(size as f32));
+	let mut font = settings.text_cache.font.as_scaled(PxScale::from(size as f32));
+	
+	// convert chars to glyphs & rasterize uncached glyphs
 	font.scale.x *= 3.0; // for sub-pixel rendering
 	let mut glyphs = Vec::with_capacity(text.len());
 	let new_textures = Mutex::new(vec!());
-	
-	// convert chars to glyphs & rasterize uncached glyphs
+	let set_subpixel = &mut settings.text_cache.set_subpixel;
 	rayon::scope(|s| {
 		for c in text.chars() {
 			let glyph = font.scaled_glyph(c);
-			let is_new = text_cache.set_subpixel.insert((c, size, foreground, background));
+			let is_new = set_subpixel.insert((c, size, foreground, background));
 			if is_new {
 				let new_textures = &new_textures;
 				let glyph = glyph.clone();
@@ -41,7 +42,7 @@ pub fn render_text_subpixel<'a, F: ThreadSafeFont>(text: impl AsRef<str>, size: 
 			height,
 		)?;
 		texture.update(None, &pixels, width as usize * 4)?;
-		text_cache.map_subpixel.insert((c, size, foreground, background), (texture, width, height, x_offset, y_offset));
+		settings.text_cache.map_subpixel.insert((c, size, foreground, background), (texture, width, height, x_offset, y_offset));
 	}
 	
 	// get text width & align properly
@@ -63,10 +64,10 @@ pub fn render_text_subpixel<'a, F: ThreadSafeFont>(text: impl AsRef<str>, size: 
 	
 	// render first char
 	if let Some((c, first_glyph)) = glyphs.first() {
-		let texture_data = text_cache.map_subpixel.get(&(*c, size, foreground, background));
+		let texture_data = settings.text_cache.map_subpixel.get(&(*c, size, foreground, background));
 		if let Some((texture, width, height, x_offset, y_offset)) = texture_data {
 			let dst = Rect::new((x - *x_offset) as i32, (y - *y_offset) as i32, *width, *height);
-			canvas.copy(texture, None, dst)?;
+			settings.canvas.copy(texture, None, dst)?;
 		}
 		x += font.h_advance(first_glyph.id);
 		x += size as f32 * EXTRA_CHAR_SPACING;
@@ -76,10 +77,10 @@ pub fn render_text_subpixel<'a, F: ThreadSafeFont>(text: impl AsRef<str>, size: 
 	// render remaining chars (with kerning)
 	for [(_prev_c, prev_glyph), (c, glyph)] in glyphs.array_windows() {
 		x += font.kern(prev_glyph.id, glyph.id);
-		let texture_data = text_cache.map_subpixel.get(&(*c, size, foreground, background));
+		let texture_data = settings.text_cache.map_subpixel.get(&(*c, size, foreground, background));
 		if let Some((texture, width, height, x_offset, y_offset)) = texture_data {
 			let dst = Rect::new((x - *x_offset) as i32, (y - *y_offset) as i32, *width, *height);
-			canvas.copy(texture, None, dst)?;
+			settings.canvas.copy(texture, None, dst)?;
 		}
 		x += font.h_advance(glyph.id);
 		x += size as f32 * EXTRA_CHAR_SPACING;
