@@ -2,7 +2,7 @@
 
 <br>
 
-- v0.3.1
+- v0.3.1 (25/09/01)
   - Api changes:
     - `TextRenderingSettings::new_regular()` and `TextRenderingSettings::new_subpixel()` now take `Into<sdl3::pixels::Color>` instead of `sdl3::pixels::Color`
   - Updated and polished documentation
