@@ -2,6 +2,13 @@
 
 <br>
 
+- v0.3.1
+  - Api changes:
+    - `TextRenderingSettings::new_regular()` and `TextRenderingSettings::new_subpixel()` now take `Into<sdl3::pixels::Color>` instead of `sdl3::pixels::Color`
+  - Updated and polished documentation
+
+<br>
+
 - **v0.3.0:** (25/08/31)
   - Api changes:
     - `render_text_regular()` and `render_text_subpixel()` now take `TextRenderingSettings` in place of multiple other arguments

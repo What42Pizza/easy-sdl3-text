@@ -40,7 +40,7 @@ pub fn example_draw_function<'a, F: ThreadSafeFont>(
 	let foreground = Color::RGB(30, 30, 30);
 	let background = Color::RGB(255, 255, 255);
 	
-	// most arguments to the rendering functions stay the same, so they're all put into a reusable struct
+	// most arguments to the rendering functions are the same across calls, so they're all put into a reusable struct
 	let mut text_rendering_settings = TextRenderingSettings::new_subpixel(
 		size,
 		HAlign::Left, VAlign::Center,

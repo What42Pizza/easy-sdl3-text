@@ -5,7 +5,9 @@ use ab_glyph::Font;
 
 
 
-/// This is a holder for most of the arguments to `render_text_regular()` and `render_text_subpixel()`
+/// This holds most of the arguments to `render_text_regular()` and `render_text_subpixel()`
+/// 
+/// These arguments (fields) are each likely to not change from call to call
 pub struct TextRenderingSettings<'a, 'b, F: ThreadSafeFont> {
 	/// NOTE: for `render_text_subpixel()`, this is converted to u32 (this is don to significantly cut down on the number of character textures to rasterize and cache)
 	pub size: f32,
@@ -25,15 +27,15 @@ pub struct TextRenderingSettings<'a, 'b, F: ThreadSafeFont> {
 	pub text_cache: &'a mut TextCache<'b, F>,
 }
 
-impl<'a, 'b, F:ThreadSafeFont> TextRenderingSettings<'a, 'b, F> {
+impl<'a, 'b, F: ThreadSafeFont> TextRenderingSettings<'a, 'b, F> {
 	/// Creates a new `TextRenderingSettings` that is meant to be used with `render_text_regular()`, but can also be used for subpixel rendering
 	#[allow(clippy::too_many_arguments)]
-	pub fn new_regular(size: f32, h_align: impl Into<HAlign>, v_align: impl Into<VAlign>, foreground: Color, canvas: &'a mut Canvas<Window>, texture_creator: &'b TextureCreator<WindowContext>, text_cache: &'a mut TextCache<'b, F>) -> Self {
+	pub fn new_regular(size: f32, h_align: impl Into<HAlign>, v_align: impl Into<VAlign>, foreground: impl Into<Color>, canvas: &'a mut Canvas<Window>, texture_creator: &'b TextureCreator<WindowContext>, text_cache: &'a mut TextCache<'b, F>) -> Self {
 		Self {
 			size,
 			h_align: h_align.into(),
 			v_align: v_align.into(),
-			foreground,
+			foreground: foreground.into(),
 			background: Color::RGB(127, 127, 127),
 			canvas,
 			texture_creator,
@@ -42,13 +44,13 @@ impl<'a, 'b, F:ThreadSafeFont> TextRenderingSettings<'a, 'b, F> {
 	}
 	/// Creates a new `TextRenderingSettings` that is meant to be used with `render_text_subpixel()`, but can also be used for regular rendering
 	#[allow(clippy::too_many_arguments)]
-	pub fn new_subpixel(size: u32, h_align: impl Into<HAlign>, v_align: impl Into<VAlign>, foreground: Color, background: Color, canvas: &'a mut Canvas<Window>, texture_creator: &'b TextureCreator<WindowContext>, text_cache: &'a mut TextCache<'b, F>) -> Self {
+	pub fn new_subpixel(size: u32, h_align: impl Into<HAlign>, v_align: impl Into<VAlign>, foreground: impl Into<Color>, background: impl Into<Color>, canvas: &'a mut Canvas<Window>, texture_creator: &'b TextureCreator<WindowContext>, text_cache: &'a mut TextCache<'b, F>) -> Self {
 		Self {
 			size: size as f32,
 			h_align: h_align.into(),
 			v_align: v_align.into(),
-			foreground,
-			background,
+			foreground: foreground.into(),
+			background: background.into(),
 			canvas,
 			texture_creator,
 			text_cache,
@@ -58,14 +60,14 @@ impl<'a, 'b, F:ThreadSafeFont> TextRenderingSettings<'a, 'b, F> {
 
 
 
-/// Basically a wrapper for `ab_glyph::Font` that also implements `Send` and `Sync`
+/// Basically just a wrapper for `ab_glyph::Font` that also implements `Send` and `Sync`. As far as I know, all ab_glyph fonts already implement Send and Sync, but the Font trait for some reason doesn't
 pub trait ThreadSafeFont: Font + Send + Sync {}
 
-impl<T: Font + Send + Sync> ThreadSafeFont for T {}
+impl<F: Font + Send + Sync> ThreadSafeFont for F {}
 
 
 
-/// A cache for character textures, this must be passed to `render_text_regular()` and `render_text_subpixel()`
+/// A cache for character textures (also holds the font)
 pub struct TextCache<'a, F: ThreadSafeFont> {
 	// (char, foreground) -> (texture, width, height, x_offset, y_offset)
 	pub(crate) map_regular: HashMap<(char, Color), (Texture<'a>, u32, u32, f32, f32)>,
@@ -129,11 +131,11 @@ impl HAlign {
 /// Vertical alignment
 #[derive(Copy, Clone)]
 pub enum VAlign {
-	/// Treats the 'x' value as the top edge
+	/// Treats the 'y' value as the top edge
 	Top,
-	/// Treats the 'x' value as the text middle
+	/// Treats the 'y' value as the text middle
 	Center,
-	/// Treats the 'x' value as the bottom edge
+	/// Treats the 'y' value as the bottom edge
 	Bottom,
 }
 

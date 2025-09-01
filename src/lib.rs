@@ -1,19 +1,15 @@
 //! # Easy Sdl3 Text
 //! 
-//! To get started, just look at one of the [examples](https://github.com/What42Pizza/easy-sdl3-text/tree/main/examples)
-//! 
-//! The three main functions from this crate you need to know are:
-//! 
-//! - `TextCache::new()` - for creating the cache (this single cache can and should be used for ALL text rendering)
-//! - `render_text_regular()` - for rendering text with a specific position, size, and foreground color to a canvas
-//! - `render_text_subpixel()` - for rendering text with a specific position, size, foreground color, and background color to a canvas
-//! 
-//! ### Known Limitations:
-//! 
-//! - The subpixel rendering cannot blend into a background, and must have the background color supplied so that it can pre-blend the text onto a single color. This is because of subpixel rendering's per-channel mixing, which cannot be done after initial rasterization without custom shaders, which sdl3's renderer api doesn't support.
-//! - The subpixel rendering takes an integer size, which makes resizing look slightly strange. This is an intentional choice to cut down significantly on the number of textures to rasterize and cache.
+//! To get started, just look at one of the [examples](https://github.com/What42Pizza/easy-sdl3-text/tree/main/examples) (or at the example code below)
 //! 
 //! <br>
+//! 
+//! **Quick api overview:**
+//! 
+//! - `TextCache` - holds all the long-lived data that this crate needs for rendering text, excluding the canvas and texture creator
+//! - `TextRenderingSettings` - holds most of the arguments for the text rendering functions
+//! - `render_text_regular()` - renders text without subpixel rendering
+//! - `render_text_subpixel()` - renders text with subpixel rendering
 //! 
 //! ### Example Code:
 //! 
@@ -34,7 +30,7 @@
 //! 	let foreground = Color::RGB(30, 30, 30);
 //! 	let background = Color::RGB(255, 255, 255);
 //! 	
-//! 	// most arguments to the rendering functions stay the same, so they're all put into a reusable struct
+//! 	// most arguments to the rendering functions are the same across calls, so they're all put into a reusable struct
 //! 	let mut text_rendering_settings = TextRenderingSettings::new_subpixel(
 //! 		size,
 //! 		HAlign::Left, VAlign::Center,
@@ -51,6 +47,13 @@
 //! 	Ok(())
 //! }
 //! ```
+//! 
+//! <br>
+//! 
+//! ### Known Limitations:
+//! 
+//! - The subpixel rendering cannot blend into a background, and must have the background color supplied so that it can pre-blend the text onto a single color. This is because of subpixel rendering's per-channel mixing, which cannot be done after initial rasterization without custom shaders, which sdl3's renderer api doesn't support.
+//! - The subpixel rendering takes an integer size, which makes resizing look slightly strange. This is an intentional choice to cut down significantly on the number of textures to rasterize and cache.
 
 
 
@@ -61,10 +64,10 @@
 
 
 
-/// Code for non-sub-pixel rendering (a bit faster and easier to use, but looks a bit pixelated)
+/// Functions for non-sub-pixel rendering (a bit faster and easier to use, but looks a bit pixelated)
 pub mod regular;
 pub use regular::*;
-/// Code for sub-pixel rendering (limited and a bit slower but looks really nice)
+/// Functions for sub-pixel rendering (limited and a bit slower but looks really nice)
 pub mod subpixel;
 pub use subpixel::*;
 /// All data types for this crate
